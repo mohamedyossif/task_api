@@ -1,3 +1,4 @@
+import 'package:api_task/food_list.dart';
 import 'package:api_task/networking.dart';
 import 'package:flutter/material.dart';
 
@@ -7,14 +8,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-   var foodList;
-  getFoodList() async {
-    foodList = await Networking.getData();
-  }
-
   @override
   void initState() {
-    getFoodList();
     super.initState();
   }
 
@@ -24,49 +19,67 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: AppBar(
           title: Center(child: Text("Foods")),
         ),
-        body: ListView.builder(
-            itemCount: Networking.numberOfList,
-            itemBuilder: (context, int index) {
-              var imageUri = foodList['results'][index]['image'];
-              return Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 100,
-                          width: 150,
-                          child: Image.network(
-                            imageUri,
-                            scale: 2,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 10.0,
-                        ),
-                        Text(
-                          foodList['results'][index]['title'],
-                          style: TextStyle(fontSize: 18),
-                        ),
-                        SizedBox(
-                          height: 17.0,
-                        ),
-                        Row(
+        body: FutureBuilder<List<FoodList>>(
+          future: Networking.getData(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return ListView.builder(
+                itemCount: snapshot.data?.length,
+                itemBuilder: (context, int index) {
+                  String imageUri = snapshot.data![index].imageUri;
+                  return Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Column(
                           children: [
-                            Text('Code for Request : '),
-                            Text(
-                              foodList['results'][index]['id'].toString(),
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                            SizedBox(
+                              height: 100,
+                              width: 150,
+                              child: Image.network(
+                                imageUri,
+                                scale: 2,
+                              ),
                             ),
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            Text(
+                              snapshot.data![index].foodName,
+                              style: TextStyle(fontSize: 18),
+                            ),
+                            SizedBox(
+                              height: 17.0,
+                            ),
+                            Row(
+                              children: [
+                                Text('Code for Request : '),
+                                Text(
+                                  snapshot.data![index].code.toString(),
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            )
                           ],
-                        )
-                      ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               );
-            },),);
+            } else {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
+        ));
   }
 }
+
+/*
+
+
+          
+ */
